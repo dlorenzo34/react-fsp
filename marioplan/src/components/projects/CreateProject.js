@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { createProject } from '../../store/actions/projectActions'
 import { Redirect } from 'react-router-dom'
+import { storage } from '../../config/fbConfig';
 
 class CreateProject extends Component {
   state = {
@@ -9,10 +10,28 @@ class CreateProject extends Component {
     content: ''
   }
   handleChange = (e) => {
-    this.setState({
-      [e.target.id]: e.target.value
-    })
+    if (e.target.id != 'file') {
+      this.setState({
+        [e.target.id]: e.target.value
+      })
+    } else {
+      this.setState({
+        [e.target.id]: e.target.files[0]
+      })
+    }
   }
+  
+  componentDidUpdate = () => {
+    console.log("this.state ->", this.state);
+    const fileRef = storage.ref().child('files').child('test');
+    console.log("fileRef ->", fileRef);
+    fileRef.put(this.state.file).then(function(snapshot) {
+      console.log('Uploaded a blob or file! ->', snapshot);
+    }).catch(function(error) {
+      console.log("Error ->", error)
+    });
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
     // console.log(this.state);
@@ -25,17 +44,21 @@ class CreateProject extends Component {
     return (
       <div className="container">
         <form className="white" onSubmit={this.handleSubmit}>
-          <h5 className="grey-text text-darken-3">Create a New Project</h5>
+          <h5 className="grey-text text-darken-3">Upload notes</h5>
           <div className="input-field">
+            <label htmlFor="file">Choose a file</label>
+            <input type="file" id='file' onChange={this.handleChange} />
+          </div>
+          <div className="input-field">
+            <label htmlFor="title">Title</label>
             <input type="text" id='title' onChange={this.handleChange} />
-            <label htmlFor="title">Project Title</label>
           </div>
           <div className="input-field">
+            <label htmlFor="content">Description</label>
             <textarea id="content" className="materialize-textarea" onChange={this.handleChange}></textarea>
-            <label htmlFor="content">Project Content</label>
           </div>
           <div className="input-field">
-            <button className="btn pink lighten-1">Create</button>
+            <button className="btn pink lighten-1">Upload</button>
           </div>
         </form>
       </div>
