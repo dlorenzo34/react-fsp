@@ -2,34 +2,32 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { createProject } from '../../store/actions/projectActions'
 import { Redirect } from 'react-router-dom'
-import { storage } from '../../config/fbConfig';
 
 class CreateProject extends Component {
   state = {
-    title: '',
-    content: ''
+    userUi: '',
+    fileTitle: '',
+    fileDescription: '',
+    fileName: '',
   }
-  handleChange = (e) => {
-    if (e.target.id != 'file') {
-      this.setState({
-        [e.target.id]: e.target.value
-      })
-    } else {
-      this.setState({
-        [e.target.id]: e.target.files[0]
-      })
-    }
+  handleInputChange = (event) => {
+    this.setState({
+      [event.target.id]: event.target.value
+    })
+    console.log("this.state ->", this.state);
   }
   
-  componentDidUpdate = () => {
-    console.log("this.state ->", this.state);
-    const fileRef = storage.ref().child('files').child('test');
-    console.log("fileRef ->", fileRef);
-    fileRef.put(this.state.file).then(function(snapshot) {
-      console.log('Uploaded a blob or file! ->', snapshot);
-    }).catch(function(error) {
-      console.log("Error ->", error)
-    });
+  handleFileChange = (event) => {
+    const strFileName = event.target.files[0].name.replace(/\.[^/.]+$/, "");
+    this.setState({
+      [event.target.id]: event.target.files[0],
+      fileName: strFileName,
+    })
+  }
+
+  componentDidMount = () => {
+    const { auth } = this.props;
+    this.setState({userUi: auth.uid});
   }
 
   handleSubmit = (e) => {
@@ -40,6 +38,7 @@ class CreateProject extends Component {
   }
   render() {
     const { auth } = this.props;
+    console.log("this.state", this.state);
     if (!auth.uid) return <Redirect to='/signin' /> 
     return (
       <div className="container">
@@ -47,15 +46,15 @@ class CreateProject extends Component {
           <h5 className="grey-text text-darken-3">Upload notes</h5>
           <div className="input-field">
             <label htmlFor="file">Choose a file</label>
-            <input type="file" id='file' onChange={this.handleChange} />
+            <input type="file" id='file' onChange={this.handleFileChange} />
           </div>
           <div className="input-field">
             <label htmlFor="title">Title</label>
-            <input type="text" id='title' onChange={this.handleChange} />
+            <input type="text" id='fileTitle' onChange={this.handleInputChange} />
           </div>
           <div className="input-field">
             <label htmlFor="content">Description</label>
-            <textarea id="content" className="materialize-textarea" onChange={this.handleChange}></textarea>
+            <textarea id="fileDescription" className="materialize-textarea" onChange={this.handleInputChange}></textarea>
           </div>
           <div className="input-field">
             <button className="btn pink lighten-1">Upload</button>
